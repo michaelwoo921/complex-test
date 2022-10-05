@@ -1,36 +1,26 @@
 const express = require('express')
 const dotenv = require('dotenv')
 const ejs = require('ejs')
+const router = require('./router')
 
 const app = express()
 
-
+// parse form data
+app.use(express.json())
+app.use(express.urlencoded({
+   extended: false
+}))
 
 // set up views
 app.set('view engine', 'ejs')
 app.use(express.static('public'))
 
-app.get('/', (req,res) => {
-    res.render('home-guest')
-})
+// routes
+app.use('/', router)
 
-app.get('/create-post', function (req, res) {
-    res.render('create-post');
-  });
 
-// test
-app.get('/test', (req,res)=> {
-    // res.render('404')
-    // res.render('search-visible')
-    // res.render('post')
-    // res.render('create-post')
-    // res.render('home-logged-in-no-results')
-    // res.render('home-logged-in-results')
-    // res.render('profile-posts')
-    // res.render('profile-users')
-    res.render('chat-visible')
 
-})
+
 
 
 
