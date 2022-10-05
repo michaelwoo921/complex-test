@@ -1,3 +1,5 @@
+const bcrypt = require('bcryptjs');
+
 const usersCollection = require('../db').collection('users')
 
 
@@ -61,6 +63,9 @@ User.prototype.register= function(){
         this.validate()
         //save to database
         if(!this.errors.length){
+          // hash user password
+          const salt = bcrypt.genSaltSync(10)
+          this.data.password = bcrypt.hashSync(this.data.password, salt)
           usersCollection.insertOne(this.data)
         }
 }
@@ -68,13 +73,13 @@ User.prototype.register= function(){
 User.prototype.login = function(){
   return new Promise((resolve, reject) =>{
     this.cleanUp()
-    usersCollection.findOne({username: this.data.username}).then(function(attemptedUser){
-      if(attemptedUser && attemptedUser.password == this.data.password){
+    usersCollection.findOne({username: this.data.username}).then((attemptedUser) =>{
+      if(attemptedUser && bcrypt.compareSync(this.data.password, attemptedUser.password)){
         resolve('congrat!')
       }  else{
         reject('invalid credential')
       }
-    }).catch(function(err){
+    }).catch((err)=>{
       reject('server error')
     })
       

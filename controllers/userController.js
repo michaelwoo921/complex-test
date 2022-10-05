@@ -14,7 +14,10 @@ exports.register = (req,res) => {
 
 exports.login = (req,res) => {
     const user = new User(req.body);
-    user.login().then(result => res.send(result)).catch(err =>res.send(err))
+    user.login().then(function(result){
+        req.session.user = {username: user.data.username}
+        res.send(result)
+    }).catch(err =>res.send(err))
 
 }
 
@@ -23,6 +26,10 @@ exports.logout = (req,res) => {
 }
 
 exports.home = (req,res) => {
-    console.log(req.body)
-    res.render('home-guest')
+    if(req.session.user){
+        res.send('welcome to actual application')
+    }else{
+        res.render('home-guest')
+    }
+    
 }
