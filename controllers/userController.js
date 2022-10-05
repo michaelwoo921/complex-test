@@ -13,6 +13,8 @@ exports.register = (req,res) => {
 }
 
 exports.login = (req,res) => {
+    const user = new User(req.body);
+    user.login().then(result => res.send(result)).catch(err =>res.send(err))
 
 }
 

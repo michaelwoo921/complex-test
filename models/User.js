@@ -1,3 +1,6 @@
+const usersCollection = require('../db').collection('users')
+
+
 const validator = require('validator');
 function User(data){
     this.data = data;
@@ -5,7 +8,22 @@ function User(data){
 }
 
 User.prototype.cleanUp = function(){
-    console.log('clean data')
+  // remove bogus inputs
+
+  if (typeof this.data.username != 'string') {
+    this.data.username = '';
+  }
+  if (typeof this.data.email != 'string') {
+    this.data.email = '';
+  }
+  if (typeof this.data.password != 'string') {
+    this.data.password = '';
+  }
+  this.data = {
+    username: this.data.username.trim().toLowerCase(),
+    email: this.data.email.trim().toLowerCase(),
+    password: this.data.password,
+  };
 }
 
 User.prototype.validate =function(){
@@ -41,9 +59,30 @@ User.prototype.register= function(){
         this.cleanUp()
         // validate user
         this.validate()
+        //save to database
+        if(!this.errors.length){
+          usersCollection.insertOne(this.data)
+        }
 }
 
+User.prototype.login = function(){
+  return new Promise((resolve, reject) =>{
+    this.cleanUp()
+    usersCollection.findOne({username: this.data.username}).then(function(attemptedUser){
+      if(attemptedUser && attemptedUser.password == this.data.password){
+        resolve('congrat!')
+      }  else{
+        reject('invalid credential')
+      }
+    }).catch(function(err){
+      reject('server error')
+    })
+      
+      
+    
+  })
+}
 
-
+  
 
 module.exports = User;
