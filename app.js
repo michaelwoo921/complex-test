@@ -1,6 +1,7 @@
 const express = require('express')
 const session = require('express-session')
 const MongoStore = require('connect-mongo');
+const flash = require('connect-flash');
 const dotenv = require('dotenv')
 const ejs = require('ejs')
 const router = require('./router')
@@ -20,6 +21,7 @@ const sessionOptions = session({
    })
 })
 app.use(sessionOptions);
+app.use(flash())
 
 // parse form data
 app.use(express.json())

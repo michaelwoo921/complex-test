@@ -28,7 +28,8 @@ User.prototype.cleanUp = function(){
   };
 }
 
-User.prototype.validate =function(){
+User.prototype.validate = function(){
+  return new Promise(async (resolve, reject) => {
     if (this.data.username == '') {
         this.errors.push('you must provide username');
       }
@@ -53,21 +54,49 @@ User.prototype.validate =function(){
       if (this.data.username.length > 30) {
         this.errors.push('Username cannot exceed 30 characters.');
       }
+
+      // when username is valid check if username is taken
+      // when email is valid check if email is taken
+      if (validator.isEmail(this.data.email)) {
+        let emailExists = await usersCollection.findOne({
+          email: this.data.email,
+        });
+        if (emailExists) {
+          this.errors.push('That email is already being used');
+        }
+      }
+      if (this.data.username.length > 2 && this.data.username.length < 31 &&
+        validator.isAlphanumeric(this.data.username)) {
+        // usernameExists
+        let usernameExists = await usersCollection.findOne({
+          username: this.data.username,
+        });
+        if (usernameExists) {
+          this.errors.push('That username is already taken');
+        }
+      }
+      resolve()
+}
+)
 }
 
-
 User.prototype.register= function(){
-        // clea bogus data
-        this.cleanUp()
-        // validate user
-        this.validate()
-        //save to database
-        if(!this.errors.length){
-          // hash user password
-          const salt = bcrypt.genSaltSync(10)
-          this.data.password = bcrypt.hashSync(this.data.password, salt)
-          usersCollection.insertOne(this.data)
-        }
+  return new Promise(async (resolve, reject) =>{
+    // clea bogus data
+    this.cleanUp()
+    // validate user
+    await this.validate()
+    //save to database
+    if(!this.errors.length){
+      // hash user password
+      const salt = bcrypt.genSaltSync(10)
+      this.data.password = bcrypt.hashSync(this.data.password, salt)
+      await usersCollection.insertOne(this.data)
+      resolve()
+    }else {
+      reject(this.errors)
+    }
+})
 }
 
 User.prototype.login = function(){
