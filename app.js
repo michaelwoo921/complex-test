@@ -23,6 +23,13 @@ const sessionOptions = session({
 app.use(sessionOptions);
 app.use(flash())
 
+// accesing session data from templates
+app.use(function(req,res, next){
+   res.locals.user = req.session.user;
+   next()
+})
+
+
 // parse form data
 app.use(express.json())
 app.use(express.urlencoded({

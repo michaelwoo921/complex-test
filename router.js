@@ -1,16 +1,17 @@
 const express = require('express');
 const userController = require('./controllers/userController')
+const postController = require('./controllers/postController')
 const router = express.Router();
 
+// user realted routes
 router.get('/', userController.home)
 router.post('/register', userController.register)
 router.post('/login', userController.login)
 router.post('/logout', userController.logout)
 
+// post related routes
+router.get('/create-post',userController.mustBeLoggedIn, postController.viewCreateScreen);
 
-router.get('/create-post', function (req, res) {
-    res.render('create-post');
-  });
 
 // test
 router.get('/test', (req,res)=> {
