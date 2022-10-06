@@ -15,15 +15,14 @@
     </div>
   
     <div class="list-group">
-      <a href="#" class="list-group-item list-group-item-action">
-        <img class="avatar-tiny" src="https://gravatar.com/avatar/b9216295c1e3931655bae6574ac0e4c2?s=128"> User 1
-      </a>
-      <a href="#" class="list-group-item list-group-item-action">
-        <img class="avatar-tiny" src="https://gravatar.com/avatar/b9216295c1e3931655bae6574ac0e4c2?s=128"> User 2
-      </a>
-      <a href="#" class="list-group-item list-group-item-action">
-        <img class="avatar-tiny" src="https://gravatar.com/avatar/b9216295c1e3931655bae6574ac0e4c2?s=128"> User 3
-      </a>
+      <% posts.forEach(function(post){ %>
+          <a href="/post/<%= post._id %>" class="list-group-item list-group-item-action">
+            <img class="avatar-tiny" src="<%= post.author.avatar %>"> <%= post.author.username  %>
+          </a>
+          <strong> <%= post.title %></strong> on  <%= post.createdDate.getMonth() + 1 %>/<%= post.createdDate.getDate() %>/<%= post.createdDate.getFullYear() %>
+      <% }) %>
+      
+  
     </div>
   </div>
   

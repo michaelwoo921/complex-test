@@ -139,7 +139,7 @@ User.findByUsername = function(username){
                 // include avatar and remove password before passing userDoc
                 userDoc = new User(userDoc, true)
                 userDoc = {
-                  _id: userDoc.data_id,
+                  _id: userDoc.data._id,
                   username: userDoc.data.username,
                   avatar: userDoc.avatar
                 }
