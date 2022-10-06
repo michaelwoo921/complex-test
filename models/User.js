@@ -128,4 +128,32 @@ User.prototype.getAvatar = function(){
   this.avatar = `https://gravatar.com/avatar/${md5(this.data.email)}?s=128`
 }
 
+User.findByUsername = function(username){
+  return new Promise(async function(resolve, reject){
+    if(typeof username != 'string'){
+      reject()
+      return;
+    }
+    usersCollection.findOne({username: username}).then(userDoc => {
+      if(userDoc){ 
+                // include avatar and remove password before passing userDoc
+                userDoc = new User(userDoc, true)
+                userDoc = {
+                  _id: userDoc.data_id,
+                  username: userDoc.data.username,
+                  avatar: userDoc.avatar
+                }
+                console.log(userDoc)
+                resolve(userDoc) 
+      }else{
+         reject()
+      }
+    }).catch(function(){
+      reject()
+    })
+   
+  })
+}
+
+
 module.exports = User;
