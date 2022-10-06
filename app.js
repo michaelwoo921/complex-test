@@ -29,6 +29,8 @@ app.use(function(req,res, next){
    req.visitorId = req.session.user ? req.session.user._id : 0;
 
    res.locals.user = req.session.user;
+   res.locals.errors = req.flash("errors")
+   res.locals.success = req.flash("success")
    next()
 })
 

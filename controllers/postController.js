@@ -22,5 +22,45 @@ exports.viewSingle = async function(req,res){
     }catch{
         res.render('404')
     }
+}
 
+exports.viewEditScreen =async function(req,res){
+    try{
+        const post = await Post.findSingleById(req.params.id);
+        res.render('edit-post', {post})
+    }catch{
+        res.render('404')
+    }
+}
+
+exports.edit = function(req,res){
+        // update post
+        const post = new Post(req.body, req.visitorId, req.params.id)
+        post.update().then(function(status){
+            if(status == 'success'){
+                // updated to db
+                req.flash("success", "post successfully updated")
+                req.session.save(function(){
+                    res.redirect(`/post/${req.params.id}/edit`)
+                })
+            }else{
+                // validation error
+                post.errors.forEach(function(error){
+                    req.flash("errors", error)
+                    req.session.save(
+                        function(){
+                            res.redirect(`/post/${req.params.id}/edit`)
+                        }
+                    )
+                    
+                })
+            }
+        }).catch(function(){
+            // visitor is not owner of the post
+            req.flash("errors", "You do not have permisssion to perform that action")
+            req.session.save(function(){
+                res.redirect('/')
+            })
+        })
+   
 }
