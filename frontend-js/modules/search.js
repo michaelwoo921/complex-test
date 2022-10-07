@@ -1,4 +1,6 @@
 import axios from 'axios'
+import DOMPurify from 'dompurify'
+
 export default class Search {
     // 1 select DOM element
     constructor(){
@@ -68,7 +70,7 @@ export default class Search {
 
     renderResultsHTML(posts){
         if(posts.length){
-            this.resultsArea.innerHTML = `<div class="list-group shadow-sm">
+            this.resultsArea.innerHTML = DOMPurify.sanitize(`<div class="list-group shadow-sm">
             <div class="list-group-item active"><strong>Search Results</strong> (${posts.length>1? `${posts.length} items found`: '1 item found'})</div>
             ${posts.map(post => {
                 const postDate = new Date(post.createdDate)
@@ -78,9 +80,7 @@ export default class Search {
               </a>`
                 )
             }).join('')}
-            
-
-          </div>`
+          </div>`)
         }else{
             this.resultsArea.innerHTML = `<p class="alert alert-danger text-center shadow-sm">Soory, we could not find any result for that search</p>`
         }   
