@@ -1,6 +1,8 @@
 const express = require('express');
 const userController = require('./controllers/userController')
 const postController = require('./controllers/postController')
+const followController = require('./controllers/followController')
+
 const router = express.Router();
 
 // user realted routes
@@ -20,6 +22,9 @@ router.post('/search',userController.mustBeLoggedIn, postController.search)
 
 // profile related routes
 router.get('/profile/:username',  userController.ifUserExists, userController.profilePostsScreen)
+
+// follow related routes
+router.post('/addFollow/:username',userController.mustBeLoggedIn, followController.addFollow)
 
 // test
 router.get('/test', (req,res)=> {
