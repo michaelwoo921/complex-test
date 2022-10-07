@@ -109,7 +109,7 @@ Post.delete = function(postIdToDelete, currentUserId){
     })
 }
 
-Post.reusablePostQuery = function(uniqueOperayions, visitorId){
+Post.reusablePostQuery = function(uniqueOperayions, visitorId, finalOperations=[]){
     return new Promise(async function(resolve, reject){
 
         const aggOperations = uniqueOperayions.concat([
@@ -126,12 +126,13 @@ Post.reusablePostQuery = function(uniqueOperayions, visitorId){
                 authorId: "$author",
                 author: {$arrayElemAt: ["$authorDocument", 0]}
             }}
-        ])
+        ]).concat(finalOperations)
         let posts = await postsCollection.aggregate(aggOperations).toArray()
 
         // clean up author property in each post object
         posts = posts.map(function(post){
             post.isVisitorOwner = post.authorId.equals(visitorId)
+            post.authorId = undefined
             post.author = {
                 username: post.author.username,
                 avatar: new User(post.author, true).avatar
@@ -169,6 +170,18 @@ Post.findByAuthorId = function(authorId){
 }
 
 
+Post.search = function(searchTerm){
+    return new Promise(async (resolve, reject) => {
+        if(typeof searchTerm == 'string'){
+            const posts = await Post.reusablePostQuery([
+                {$match: {$text: {$search: searchTerm}}}    
+            ], undefined, [{$sort: {score: {$meta: "textScore"}}}])
+            resolve(posts)
+        }else{
+            reject()
+        }
+    })
+}
 
 
 module.exports = Post;
