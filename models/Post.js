@@ -1,6 +1,7 @@
 const postsCollection = require('../db').db().collection('posts');
 const ObjectId = require('mongodb').ObjectId
 const User = require('./User')
+const sanitizeHTML = require('sanitize-html')
 
 function Post(data, userid, requestedPostId){
     this.data = data;
@@ -21,8 +22,8 @@ Post.prototype.cleanUp = function(){
 
     // remove bogus inputs
     this.data = {
-      title: this.data.title.trim(),
-      body: this.data.body.trim(),
+      title: sanitizeHTML(this.data.title.trim(), {allowedTags: [], allowedAttributes: {}}),
+      body: sanitizeHTML(this.data.body.trim(), {allowedTags: [], allowedAttributes: {}}),
       createdDate: new Date(),
       author: ObjectId(this.userid)
     };
@@ -43,8 +44,8 @@ Post.prototype.create = function(){
         this.validate()
         if(!this.errors.length){
             //save post into database
-            postsCollection.insertOne(this.data).then(function(){
-                resolve();
+            postsCollection.insertOne(this.data).then(function(info){
+                resolve(info.insertedId);
             }).catch(function(){
                 this.errors.push('Server error');
                 reject(this.errors)
@@ -85,8 +86,26 @@ Post.prototype.actuallyUpdate = function(){
             }} )
             resolve('success')
         } else {
-            reject('failure')
+            resolve('failure')
         }
+    })
+}
+
+Post.delete = function(postIdToDelete, currentUserId){
+    return new Promise(async (resolve, reject) => {
+        try{
+            const post = await Post.findSingleById(postIdToDelete, currentUserId)
+            if(post.isVisitorOwner){
+                await postsCollection.deleteOne({_id: new ObjectId(postIdToDelete) })
+                resolve()
+            }else{
+                reject()
+            }
+        }catch{
+            reject()
+        }
+        
+        
     })
 }
 

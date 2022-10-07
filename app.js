@@ -5,6 +5,8 @@ const flash = require('connect-flash');
 const dotenv = require('dotenv')
 const ejs = require('ejs')
 const router = require('./router')
+const markdown = require('marked')
+const sanitizeHTML = require('sanitize-html')
 
 const app = express()
 // session
@@ -25,9 +27,15 @@ app.use(flash())
 
 // accesing session data from templates
 app.use(function(req,res, next){
-
+   
    req.visitorId = req.session.user ? req.session.user._id : 0;
 
+   res.locals.filterUserHTML = function(content){
+      return sanitizeHTML(markdown.parse(content), {
+         allowedTags: ['h1', 'p', 'strong', 'i', 'a'],
+         allowedAttributes: {}
+      })
+   }
    res.locals.user = req.session.user;
    res.locals.errors = req.flash("errors")
    res.locals.success = req.flash("success")
