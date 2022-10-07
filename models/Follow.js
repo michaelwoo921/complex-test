@@ -1,3 +1,5 @@
+const User = require('./User');
+
 const ObjectId = require('mongodb').ObjectId;
 
 const usersCollection = require('../db').db().collection('users')
@@ -85,5 +87,71 @@ Follow.isVisitorFollowing = async function(followedId, visitorId){
         return false
     }
 }
+
+Follow.getFollowersById = function(id){
+    return new Promise(async (resolve, reject) => {
+
+        try{
+            let followers = await followsCollection.aggregate([
+                {$match: {followedId: id}},
+                {$lookup: {from: 'users', localField: "authorId", foreignField: "_id", as: "userDoc"}},
+                {$project: {
+                    username: {$arrayElemAt: ["$userDoc.username", 0]},
+                    email: {$arrayElemAt: ["$userDoc.email", 0]}
+                }}
+            ]).toArray()
+            followers = followers.map(follower => {
+                let user = new User(follower, true)
+                return {username: follower.username, avatar: user.avatar}
+            })
+            resolve(followers)
+        }catch{
+            reject()
+        }
+    })
+}
+
+Follow.getFollowingsById = function(id){
+    return new Promise(async (resolve, reject) => {
+
+        try{
+            let followers = await followsCollection.aggregate([
+                {$match: {authorId: id}},
+                {$lookup: {from: 'users', localField: "followedId", foreignField: "_id", as: "userDoc"}},
+                {$project: {
+                    username: {$arrayElemAt: ["$userDoc.username", 0]},
+                    email: {$arrayElemAt: ["$userDoc.email", 0]}
+                }}
+            ]).toArray()
+            followers = followers.map(follower => {
+                let user = new User(follower, true)
+                return {username: follower.username, avatar: user.avatar}
+            })
+            resolve(followers)
+        }catch{
+            reject()
+        }
+    })
+}
+
+
+
+Follow.countFollowersById = function(id){
+    console.log('id', id)
+    return new Promise(async (resolve, reject) => {
+        let followerCount = await followsCollection.countDocuments({followedId: id})
+        resolve(followerCount)
+    })
+}
+
+Follow.countFollowingsById = function(id){
+    console.log('id', id)
+    return new Promise(async (resolve, reject) => {
+        let followingCount = await followsCollection.countDocuments({authorId: id})
+        resolve(followingCount)
+    })
+}
+
+
 
 module.exports = Follow;
