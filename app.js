@@ -58,5 +58,13 @@ app.use(express.static('public'))
 // routes
 app.use('/', router)
 
+const server = require('http').createServer(app)
+const io = require('socket.io')(server)
 
-module.exports = app;
+io.on('connection', function(socket){
+   socket.on('chatMessageFromBrowser', function(data){
+      io.emit('chatMessageFromServer', {message: data.message})
+   })
+})
+
+module.exports = server;
