@@ -7,6 +7,7 @@ const ejs = require('ejs')
 const router = require('./router')
 const markdown = require('marked')
 const sanitizeHTML = require('sanitize-html')
+const csrf = require('csurf')
 
 const app = express()
 // session
@@ -53,10 +54,25 @@ app.use(express.urlencoded({
 app.set('view engine', 'ejs')
 app.use(express.static('public'))
 
-
+app.use(csrf())
+app.use(function(req,res,next){
+   res.locals.csrfToken = req.csrfToken()
+   next()
+})
 
 // routes
 app.use('/', router)
+
+app.use(function(err,req,res,next){
+   if(err){
+      if(err.code == 'EBADCSRFTOKEN'){
+         req.flash('errors', 'cross site request forgery detected')
+         req.session.save(() => res.redirect('/'))
+      }else{
+         res.render('404')
+      }
+   }
+})
 
 const server = require('http').createServer(app)
 const io = require('socket.io')(server)
